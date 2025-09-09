@@ -1,11 +1,187 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from '@layouts/Layout.astro'
+import NewsCard from '@components/NewsCard.astro'
+import Newsletter from '@components/Newsletter.astro'
+import { getCollection } from 'astro:content'
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const allNews = await getCollection('news')
+const sortedNews = allNews.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+)
+const featuredNews = sortedNews.filter((news: { data: { featured: any } }) => news.data.featured)
+const regularNews = sortedNews.filter((news: { data: { featured: any } }) => !news.data.featured)
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="FC Barcelona News - Las mejores noticias del Barça">
+  <div class="min-h-screen bg-dark-950">
+    <!-- Header -->
+    <header class="border-b border-dark-800">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-barca-blue to-barca-red rounded-lg flex items-center justify-center"
+            >
+              <span class="text-white font-bold text-lg">FCB</span>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-white">FC Barcelona News</h1>
+              <p class="text-sm text-dark-400">Noticias oficiales del Barça</p>
+            </div>
+          </div>
+
+          <nav class="hidden md:flex items-center gap-6">
+            <a href="/" class="text-barca-blue font-medium">Inicio</a>
+            <a
+              href="/noticias"
+              class="text-dark-400 hover:text-white transition-colors"
+              >Todas las noticias</a
+            >
+            <a
+              href="/rss.xml"
+              class="text-dark-400 hover:text-white transition-colors">RSS</a
+            >
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Left Sidebar - Newsletter -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-8">
+            <Newsletter />
+          </div>
+        </div>
+
+        <!-- Right Content - News -->
+        <div class="lg:col-span-2">
+          <!-- Featured News -->
+          {
+            featuredNews.length > 0 && (
+              <section class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  <span class="w-1 h-6 bg-barca-yellow rounded-full" />
+                  Noticias destacadas
+                </h2>
+                <div class="grid gap-6">
+                  {featuredNews.map((news: { data: { title: string; description: string; image: string; pubDate: Date }; slug: string }) => (
+                    <NewsCard
+                      title={news.data.title}
+                      excerpt={news.data.description}
+                      image={news.data.image}
+                      slug={news.slug}
+                      pubDate={news.data.pubDate}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          <!-- Regular News -->
+          <section>
+            <h2
+              class="text-2xl font-bold text-white mb-6 flex items-center gap-2"
+            >
+              <span class="w-1 h-6 bg-barca-blue rounded-full"></span>
+              Últimas noticias
+            </h2>
+            <div class="grid gap-6">
+              {
+                regularNews.map((news: { data: { title: string; description: string; image: string; pubDate: Date }; slug: string }) => (
+                  <NewsCard
+                    title={news.data.title}
+                    excerpt={news.data.description}
+                    image={news.data.image}
+                    slug={news.slug}
+                    pubDate={news.data.pubDate}
+                  />
+                ))
+              }
+            </div>
+          </section>
+
+          <!-- Load More Button -->
+          <div class="mt-12 text-center">
+            <button
+              class="bg-barca-blue hover:bg-barca-red text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+            >
+              Cargar más noticias
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-800 mt-16">
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 bg-gradient-to-br from-barca-blue to-barca-red rounded-lg flex items-center justify-center"
+              >
+                <span class="text-white font-bold text-sm">FCB</span>
+              </div>
+              <span class="text-white font-semibold">FC Barcelona News</span>
+            </div>
+            <p class="text-dark-400 text-sm">
+              Tu fuente confiable de noticias del FC Barcelona. Mantente
+              informado sobre el club de tus amores.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-white font-semibold mb-4">Enlaces</h3>
+            <ul class="space-y-2 text-sm">
+              <li>
+                <a
+                  href="/"
+                  class="text-dark-400 hover:text-barca-yellow transition-colors"
+                  >Inicio</a>
+              </li>
+              <li>
+                <a
+                  href="/noticias"
+                  class="text-dark-400 hover:text-barca-yellow transition-colors"
+                  >Noticias</a>
+              </li>
+              <li>
+                <a
+                  href="/rss.xml"
+                  class="text-dark-400 hover:text-barca-yellow transition-colors"
+                  >RSS Feed</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-white font-semibold mb-4">Contacto</h3>
+            <p class="text-dark-400 text-sm mb-2">info@fcbarcelona-news.dev</p>
+            <p class="text-dark-400 text-sm">© 2024 FC Barcelona News</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
 </Layout>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
